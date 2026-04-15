@@ -1,0 +1,6 @@
+{
+  "name": "Curriculum Graph Explorer",
+  "description": "Visualize and propose changes to university course curricula with a side-by-side graph comparison tool.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
