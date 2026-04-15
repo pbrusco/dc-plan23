@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 
 interface GraphViewProps {
   courses: Course[];
-  onCourseClick?: (course: Course) => void;
+  onCourseClick?: (course: Course | null) => void;
   onCourseMove?: (courseId: string, newSemester: number) => void;
   highlightedCourseId?: string | null;
   title: string;
@@ -80,6 +80,13 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
     const g = svg.append('g');
 
+    // Background to catch clicks outside nodes
+    g.append('rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'transparent')
+      .on('click', () => onCourseClick?.(null));
+
     // Draw Bachiller background area (Semesters 0 to 4)
     g.append('rect')
       .attr('x', LEFT_MARGIN + 100)
@@ -123,9 +130,17 @@ export const GraphView: React.FC<GraphViewProps> = ({
         .attr('stroke-width', 2);
     });
 
+    // Calculate semester totals
+    const semesterTotals: { [key: number]: number } = {};
+    courses.forEach(c => {
+      const hours = parseInt(c.workload) || 0;
+      semesterTotals[c.semester] = (semesterTotals[c.semester] || 0) + hours;
+    });
+
     // Draw semester lines and labels
     for (let i = 0; i <= 9; i++) {
       const y = i * SEMESTER_HEIGHT + PADDING_TOP;
+      const totalHours = semesterTotals[i] || 0;
       
       g.append('line')
         .attr('x1', LEFT_MARGIN)
@@ -139,53 +154,96 @@ export const GraphView: React.FC<GraphViewProps> = ({
       if (i === 0) label = 'CBC';
       if (i === 9) label = 'A elección';
 
-      g.append('text')
+      const labelText = g.append('text')
         .attr('x', 50)
         .attr('y', y + 5)
         .attr('font-size', '11px')
         .attr('font-weight', '600')
-        .attr('fill', '#475569')
-        .text(label);
+        .attr('fill', '#475569');
+
+      labelText.append('tspan').text(label);
+      
+      if (totalHours > 0) {
+        labelText.append('tspan')
+          .attr('x', 50)
+          .attr('dy', '1.2em')
+          .attr('font-size', '9px')
+          .attr('font-weight', '400')
+          .attr('fill', '#94a3b8')
+          .text(`(${totalHours} hs/sem)`);
+      }
     }
 
     // Draw links
-    g.selectAll('.link')
+    const linkPaths = g.selectAll('.link')
       .data(links)
       .enter()
       .append('path')
       .attr('class', 'link')
       .attr('d', (d: any) => {
+        const prereqs = d.target.prerequisites;
+        const prereqIndex = prereqs.indexOf(d.source.id);
+        const totalPrereqs = prereqs.length;
+        
+        const offsetRange = NODE_WIDTH * 0.6; 
+        const offset = totalPrereqs > 1 
+          ? (prereqIndex - (totalPrereqs - 1) / 2) * (offsetRange / (totalPrereqs - 1 || 1))
+          : 0;
+
         const startX = d.source.x;
         const startY = d.source.y + NODE_HEIGHT / 2;
-        const endX = d.target.x;
+        const endX = d.target.x + offset;
         const endY = d.target.y - NODE_HEIGHT / 2;
         
-        // Orthogonal-ish path
-        if (Math.abs(startX - endX) < 10) {
-          return `M ${startX} ${startY} L ${endX} ${endY}`;
-        } else {
-          const midY = (startY + endY) / 2;
-          return `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
-        }
+        // Smooth cubic bezier curve
+        const cp1y = startY + (endY - startY) * 0.4;
+        const cp2y = startY + (endY - startY) * 0.6;
+        
+        return `M ${startX} ${startY} C ${startX} ${cp1y}, ${endX} ${cp2y}, ${endX} ${endY}`;
       })
       .attr('fill', 'none')
       .attr('stroke', (d: any) => {
         if (d.isInvalid) return '#ef4444';
-        // Match blue arrows from image for Bachiller-related links if possible
-        if (d.source.type === 'bachiller') return '#2563eb';
-        return d.source.id === highlightedCourseId || d.target.id === highlightedCourseId 
-          ? '#3b82f6' 
-          : '#334155';
+        
+        const isRelated = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
+        
+        if (highlightedCourseId) {
+          return isRelated ? '#3b82f6' : '#f1f5f9';
+        }
+
+        if (d.source.type === 'bachiller') return '#93c5fd';
+        return '#cbd5e1';
       })
-      .attr('stroke-width', (d: any) => 
-        d.source.id === highlightedCourseId || d.target.id === highlightedCourseId ? 2.5 : 1.5
-      )
-      .attr('marker-end', (d: any) => d.isInvalid ? 'url(#arrowhead-invalid)' : (d.source.type === 'bachiller' ? 'url(#arrowhead-blue)' : 'url(#arrowhead)'));
+      .attr('stroke-width', (d: any) => {
+        const isRelated = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
+        return isRelated ? 3 : 1;
+      })
+      .attr('stroke-dasharray', (d: any) => {
+        if (highlightedCourseId) {
+          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          return isRelated ? null : '2,2';
+        }
+        return null;
+      })
+      .attr('opacity', (d: any) => {
+        if (highlightedCourseId) {
+          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          return isRelated ? 1 : 0.4;
+        }
+        return 1;
+      })
+      .attr('marker-end', (d: any) => {
+        if (highlightedCourseId) {
+          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          if (!isRelated) return 'url(#arrowhead-faint)';
+        }
+        return d.isInvalid ? 'url(#arrowhead-invalid)' : (d.source.type === 'bachiller' ? 'url(#arrowhead-blue)' : 'url(#arrowhead)');
+      });
 
     // Arrowhead definitions
     const defs = svg.append('defs');
     
-    const createMarker = (id: string, color: string) => {
+    const createMarker = (id: string, color: string, opacity: number = 1) => {
       defs.append('marker')
         .attr('id', id)
         .attr('viewBox', '0 -5 10 10')
@@ -196,12 +254,14 @@ export const GraphView: React.FC<GraphViewProps> = ({
         .attr('markerHeight', 5)
         .append('path')
         .attr('d', 'M0,-5L10,0L0,5')
-        .attr('fill', color);
+        .attr('fill', color)
+        .attr('fill-opacity', opacity);
     };
 
     createMarker('arrowhead', '#334155');
     createMarker('arrowhead-blue', '#2563eb');
     createMarker('arrowhead-invalid', '#ef4444');
+    createMarker('arrowhead-faint', '#cbd5e1', 0.3);
 
     // Drag behavior
     const drag = d3.drag<SVGGElement, any>()
@@ -231,6 +291,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .attr('class', 'node')
       .attr('transform', (d: any) => `translate(${d.x - NODE_WIDTH / 2}, ${d.y - NODE_HEIGHT / 2})`)
       .on('click', (event, d) => {
+        event.stopPropagation();
         if (event.defaultPrevented) return;
         onCourseClick?.(d);
       })
@@ -246,17 +307,39 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .attr('rx', NODE_HEIGHT / 2)
       .attr('ry', NODE_HEIGHT / 2)
       .attr('fill', (d: any) => {
+        if (highlightedCourseId && d.id !== highlightedCourseId) {
+          // Check if it's a direct prereq or direct successor
+          const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
+          const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
+          if (!isPrereq && !isSuccessor) return '#f8fafc';
+        }
         if (d.type === 'bachiller') return '#bfdbfe';
         if (d.type === 'licenciatura') return '#fef3c7';
         return '#ffffff';
       })
       .attr('stroke', (d: any) => {
-        if (d.id === highlightedCourseId) return '#ef4444';
+        if (d.id === highlightedCourseId) return '#3b82f6';
+        
+        if (highlightedCourseId) {
+          const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
+          const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
+          if (isPrereq || isSuccessor) return '#94a3b8';
+          return '#f1f5f9';
+        }
+
         if (d.type === 'bachiller') return '#3b82f6';
         if (d.type === 'licenciatura') return '#f59e0b';
         return '#e2e8f0';
       })
       .attr('stroke-width', (d: any) => d.id === highlightedCourseId ? 3 : 1.5)
+      .attr('opacity', (d: any) => {
+        if (highlightedCourseId) {
+          const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
+          const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
+          return (d.id === highlightedCourseId || isPrereq || isSuccessor) ? 1 : 0.3;
+        }
+        return 1;
+      })
       .attr('class', 'transition-all duration-200');
 
     // Node Name

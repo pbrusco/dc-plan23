@@ -74,7 +74,7 @@ export const INITIAL_COURSES: Course[] = [
     type: 'bachiller'
   },
   {
-    id: 'LAC',
+    id: 'LFA',
     name: 'Lenguajes Formales, Autómatas y Computabilidad',
     objective: 'Introducir al alumnado en las estructuras de autómatas y los lenguajes que estas estructuras pueden definir, junto con aspectos de computabilidad de problemas.',
     prerequisites: ['AED'],
@@ -83,7 +83,7 @@ export const INITIAL_COURSES: Course[] = [
     type: 'licenciatura'
   },
   {
-    id: 'OC',
+    id: 'AOC',
     name: 'Arquitectura y Organización de Computadores',
     objective: 'Describir la estructura básica de los computadores de propósito general y dedicado.',
     prerequisites: ['SD'],
@@ -113,7 +113,7 @@ export const INITIAL_COURSES: Course[] = [
     id: 'CC',
     name: 'Complejidad Computacional',
     objective: 'Definir el concepto de clases de complejidad de problemas computacionales, entendiendo cómo se clasifican los distintos problemas de acuerdo a la cantidad de recursos que consumen.',
-    prerequisites: ['TDA', 'LAC'],
+    prerequisites: ['TDA', 'LFA'],
     workload: '5 hs / sem',
     semester: 5,
     type: 'licenciatura'
@@ -122,7 +122,7 @@ export const INITIAL_COURSES: Course[] = [
     id: 'SO',
     name: 'Sistemas Operativos',
     objective: 'Describir la arquitectura de un sistema operativo moderno y el funcionamiento de las distintas componentes de tal forma que el alumnado tenga los elementos básicos para su construcción.',
-    prerequisites: ['OC'],
+    prerequisites: ['AOC'],
     workload: '10 hs / sem',
     semester: 5,
     type: 'licenciatura'
@@ -149,7 +149,7 @@ export const INITIAL_COURSES: Course[] = [
     id: 'RCD',
     name: 'Redes de Comunicaciones y Cómputo Distribuido',
     objective: 'Brindar al alumnado fundamentos teóricos y consideraciones prácticas sobre cómo funcionan las redes de comunicaciones y los sistemas de cómputo distribuido modernos.',
-    prerequisites: ['OC', 'TDA', 'EC'],
+    prerequisites: ['TDA', 'EC', 'SO'],
     workload: '10 hs / sem',
     semester: 7,
     type: 'licenciatura'
@@ -158,7 +158,7 @@ export const INITIAL_COURSES: Course[] = [
     id: 'PCP',
     name: 'Programación Concurrente y Paralela',
     objective: 'Describir los principales tipos de algoritmos y estructuras de datos concurrentes junto con sus limitaciones y posibles soluciones, incluyendo el aprovechamiento de procesamiento paralelo.',
-    prerequisites: ['RCD'],
+    prerequisites: ['PP', 'SO'],
     workload: '10 hs / sem',
     semester: 7,
     type: 'licenciatura'
