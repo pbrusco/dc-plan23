@@ -2,12 +2,14 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { INITIAL_COURSES } from './data/courses';
 import { Course, Change } from './types';
 import { GraphView } from './components/GraphView';
+import { ScheduleView } from './components/ScheduleView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
+  Calendar,
   ArrowRight, 
   History, 
   Plus, 
@@ -51,6 +53,7 @@ export default function App() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [viewMode, setViewMode] = useState<'graph' | 'schedule'>('graph');
 
   const pushToHistory = useCallback((newCourses: Course[], newChanges: Change[]) => {
     setHistory(prev => {
@@ -397,10 +400,8 @@ export default function App() {
       <header className="h-[56px] bg-primary text-white flex items-center justify-between px-4 md:px-6 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2">
           <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden text-white h-8 w-8">
-                <Menu className="w-5 h-5" />
-              </Button>
+            <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden text-white h-8 w-8" />}>
+              <Menu className="w-5 h-5" />
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-80">
               <SheetHeader className="p-5 border-b">
@@ -424,6 +425,26 @@ export default function App() {
             <GitCompare className="w-4 h-4" />
             <span className="hidden lg:inline">{showOriginal ? 'Ocultar Original' : 'Mostrar Original'}</span>
           </Button>
+          <div className="flex items-center bg-white/10 rounded-md p-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`h-7 px-2 text-xs gap-1.5 ${viewMode === 'graph' ? 'bg-white/20 text-white' : 'text-white/60'}`}
+              onClick={() => setViewMode('graph')}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Grafo</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`h-7 px-2 text-xs gap-1.5 ${viewMode === 'schedule' ? 'bg-white/20 text-white' : 'text-white/60'}`}
+              onClick={() => setViewMode('schedule')}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Agenda</span>
+            </Button>
+          </div>
           <div className="flex items-center bg-white/10 rounded-md p-1">
             <Button 
               variant="ghost" 
@@ -458,8 +479,8 @@ export default function App() {
         </div>
 
         {/* Main Content */}
-        <main className={`flex-1 grid ${showOriginal ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-px bg-border overflow-hidden`}>
-          {showOriginal && (
+        <main className={`flex-1 grid ${showOriginal && viewMode === 'graph' ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-px bg-border overflow-hidden`}>
+          {showOriginal && viewMode === 'graph' && (
             <div className="bg-card h-full overflow-hidden border-b lg:border-b-0">
               <GraphView 
                 title="Versión Original" 
@@ -470,13 +491,21 @@ export default function App() {
             </div>
           )}
           <div className="bg-card h-full overflow-hidden">
-            <GraphView 
-              title="Propuesta: Orientación Datos" 
-              courses={proposedCourses} 
-              highlightedCourseId={selectedCourseId}
-              onCourseClick={handleCourseClick}
-              onCourseMove={handleCourseMove}
-            />
+            {viewMode === 'graph' ? (
+              <GraphView 
+                title="Propuesta: Orientación Datos" 
+                courses={proposedCourses} 
+                highlightedCourseId={selectedCourseId}
+                onCourseClick={handleCourseClick}
+                onCourseMove={handleCourseMove}
+              />
+            ) : (
+              <ScheduleView 
+                courses={proposedCourses}
+                highlightedCourseId={selectedCourseId}
+                onCourseClick={handleCourseClick}
+              />
+            )}
           </div>
         </main>
       </div>

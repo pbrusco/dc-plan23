@@ -17,7 +17,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['CBC'],
     workload: '10 hs / sem',
     semester: 1,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Lunes', 'Jueves']
   },
   {
     id: 'AL',
@@ -26,7 +27,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['CBC'],
     workload: '10 hs / sem',
     semester: 1,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Martes', 'Viernes']
   },
   {
     id: 'AED',
@@ -35,7 +37,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['IP', 'AL'],
     workload: '15 hs / sem',
     semester: 2,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Martes', 'Miércoles', 'Viernes']
   },
   {
     id: 'AM',
@@ -44,7 +47,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['CBC'],
     workload: '10 hs / sem',
     semester: 2,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Lunes', 'Jueves']
   },
   {
     id: 'TDA',
@@ -53,7 +57,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['AED'],
     workload: '10 hs / sem',
     semester: 3,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Lunes', 'Miércoles']
   },
   {
     id: 'SD',
@@ -62,7 +67,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['IP'],
     workload: '5 hs / sem',
     semester: 3,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Jueves']
   },
   {
     id: 'PP',
@@ -71,7 +77,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['AED'],
     workload: '10 hs / sem',
     semester: 3,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Martes', 'Viernes']
   },
   {
     id: 'LFA',
@@ -80,7 +87,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['AED'],
     workload: '5 hs / sem',
     semester: 4,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Miércoles']
   },
   {
     id: 'AOC',
@@ -89,7 +97,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['SD'],
     workload: '10 hs / sem',
     semester: 4,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Lunes', 'Jueves']
   },
   {
     id: 'IS',
@@ -98,7 +107,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['PP'],
     workload: '10 hs / sem',
     semester: 4,
-    type: 'bachiller'
+    type: 'bachiller',
+    days: ['Martes', 'Viernes']
   },
   {
     id: 'ALC',
@@ -107,7 +117,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['AED'],
     workload: '10 hs / sem',
     semester: 5,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Martes', 'Viernes']
   },
   {
     id: 'CC',
@@ -116,7 +127,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['TDA', 'LFA'],
     workload: '5 hs / sem',
     semester: 5,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Miércoles']
   },
   {
     id: 'SO',
@@ -125,7 +137,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['AOC'],
     workload: '10 hs / sem',
     semester: 5,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Lunes', 'Jueves']
   },
   {
     id: 'EC',
@@ -134,7 +147,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['ALC', 'AM'],
     workload: '10 hs / sem',
     semester: 6,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Martes', 'Jueves']
   },
   {
     id: 'ARI',
@@ -143,7 +157,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['IS'],
     workload: '10 hs / sem',
     semester: 6,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Miércoles', 'Viernes']
   },
   {
     id: 'RCD',
@@ -152,7 +167,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['TDA', 'EC', 'SO'],
     workload: '10 hs / sem',
     semester: 7,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Martes', 'Jueves']
   },
   {
     id: 'PCP',
@@ -161,7 +177,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: ['PP', 'SO'],
     workload: '10 hs / sem',
     semester: 7,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Lunes', 'Miércoles']
   },
   {
     id: 'STS',
@@ -188,7 +205,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: [],
     workload: '5 hs / sem',
     semester: 6,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Lunes']
   },
   {
     id: 'OPT2',
@@ -197,7 +215,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: [],
     workload: '5 hs / sem',
     semester: 7,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Viernes']
   },
   {
     id: 'OPT3',
@@ -206,7 +225,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: [],
     workload: '5 hs / sem',
     semester: 8,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Miércoles']
   },
   {
     id: 'OPT4',
@@ -215,7 +235,8 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: [],
     workload: '5 hs / sem',
     semester: 8,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Jueves']
   },
   {
     id: 'TF',
@@ -224,6 +245,17 @@ export const INITIAL_COURSES: Course[] = [
     prerequisites: [],
     workload: '15 hs / sem',
     semester: 8,
-    type: 'licenciatura'
+    type: 'licenciatura',
+    days: ['Martes']
+  },
+  {
+    id: 'STS',
+    name: 'Seminario sobre Tecnología y Sociedad',
+    objective: 'Analizar el impacto de la tecnología en la sociedad.',
+    prerequisites: [],
+    workload: '5 hs / sem',
+    semester: 8,
+    type: 'licenciatura',
+    days: ['Viernes']
   }
 ];

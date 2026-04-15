@@ -7,6 +7,7 @@ export interface Course {
   workload: string;
   semester: number; // 0 for CBC, 1-8 for Cuatrimestres
   type: 'bachiller' | 'licenciatura' | 'optativa';
+  days?: string[];
 }
 
 export interface Change {
