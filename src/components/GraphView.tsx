@@ -68,6 +68,23 @@ export const GraphView: React.FC<GraphViewProps> = ({
     return l;
   }, [nodes]);
 
+  const ancestors = useMemo(() => {
+    if (!highlightedCourseId) return new Set<string>();
+    const result = new Set<string>();
+    const queue = [...(courses.find(c => c.id === highlightedCourseId)?.prerequisites || [])];
+    
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      if (result.has(currentId)) continue;
+      result.add(currentId);
+      const course = courses.find(c => c.id === currentId);
+      if (course) {
+        queue.push(...course.prerequisites);
+      }
+    }
+    return result;
+  }, [highlightedCourseId, courses]);
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -86,15 +103,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .attr('height', height)
       .attr('fill', 'transparent')
       .on('click', () => onCourseClick?.(null));
-
-    // Draw Bachiller background area (Semesters 0 to 4)
-    g.append('rect')
-      .attr('x', LEFT_MARGIN + 100)
-      .attr('y', 0)
-      .attr('width', width - (LEFT_MARGIN + 100))
-      .attr('height', 4.5 * SEMESTER_HEIGHT + PADDING_TOP)
-      .attr('fill', '#dbeafe')
-      .attr('opacity', 0.5);
 
     // Draw Year Sidebar and Semester Labels
     const years = [
@@ -205,37 +213,48 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .attr('stroke', (d: any) => {
         if (d.isInvalid) return '#ef4444';
         
-        const isRelated = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
+        const isDirect = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
+        const isAncestorPath = highlightedCourseId && ancestors.has(d.target.id);
         
         if (highlightedCourseId) {
-          return isRelated ? '#3b82f6' : '#f1f5f9';
+          if (isDirect) return '#3b82f6';
+          if (isAncestorPath) return '#94a3b8';
+          return '#f1f5f9';
         }
 
         if (d.source.type === 'bachiller') return '#93c5fd';
         return '#cbd5e1';
       })
       .attr('stroke-width', (d: any) => {
-        const isRelated = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
-        return isRelated ? 3 : 1;
+        const isDirect = highlightedCourseId && (d.source.id === highlightedCourseId || d.target.id === highlightedCourseId);
+        const isAncestorPath = highlightedCourseId && ancestors.has(d.target.id);
+        if (isDirect) return 3;
+        if (isAncestorPath) return 1.5;
+        return 1;
       })
       .attr('stroke-dasharray', (d: any) => {
         if (highlightedCourseId) {
-          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
-          return isRelated ? null : '2,2';
+          const isDirect = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          const isAncestorPath = ancestors.has(d.target.id);
+          return (isDirect || isAncestorPath) ? null : '2,2';
         }
         return null;
       })
       .attr('opacity', (d: any) => {
         if (highlightedCourseId) {
-          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
-          return isRelated ? 1 : 0.4;
+          const isDirect = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          const isAncestorPath = ancestors.has(d.target.id);
+          return (isDirect || isAncestorPath) ? 1 : 0.4;
         }
         return 1;
       })
       .attr('marker-end', (d: any) => {
         if (highlightedCourseId) {
-          const isRelated = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
-          if (!isRelated) return 'url(#arrowhead-faint)';
+          const isDirect = d.source.id === highlightedCourseId || d.target.id === highlightedCourseId;
+          const isAncestorPath = ancestors.has(d.target.id);
+          if (isDirect) return d.isInvalid ? 'url(#arrowhead-invalid)' : (d.source.type === 'bachiller' ? 'url(#arrowhead-blue)' : 'url(#arrowhead)');
+          if (isAncestorPath) return 'url(#arrowhead-ancestor)';
+          return 'url(#arrowhead-faint)';
         }
         return d.isInvalid ? 'url(#arrowhead-invalid)' : (d.source.type === 'bachiller' ? 'url(#arrowhead-blue)' : 'url(#arrowhead)');
       });
@@ -262,6 +281,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
     createMarker('arrowhead-blue', '#2563eb');
     createMarker('arrowhead-invalid', '#ef4444');
     createMarker('arrowhead-faint', '#cbd5e1', 0.3);
+    createMarker('arrowhead-ancestor', '#94a3b8', 0.8);
 
     // Drag behavior
     const drag = d3.drag<SVGGElement, any>()
@@ -311,7 +331,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
           // Check if it's a direct prereq or direct successor
           const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
           const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
-          if (!isPrereq && !isSuccessor) return '#f8fafc';
+          const isAncestor = ancestors.has(d.id);
+          if (!isPrereq && !isSuccessor && !isAncestor) return '#f8fafc';
         }
         if (d.type === 'bachiller') return '#bfdbfe';
         if (d.type === 'licenciatura') return '#fef3c7';
@@ -323,7 +344,9 @@ export const GraphView: React.FC<GraphViewProps> = ({
         if (highlightedCourseId) {
           const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
           const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
+          const isAncestor = ancestors.has(d.id);
           if (isPrereq || isSuccessor) return '#94a3b8';
+          if (isAncestor) return '#cbd5e1';
           return '#f1f5f9';
         }
 
@@ -336,7 +359,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
         if (highlightedCourseId) {
           const isPrereq = links.some(l => l.target.id === highlightedCourseId && l.source.id === d.id);
           const isSuccessor = links.some(l => l.source.id === highlightedCourseId && l.target.id === d.id);
-          return (d.id === highlightedCourseId || isPrereq || isSuccessor) ? 1 : 0.3;
+          const isAncestor = ancestors.has(d.id);
+          return (d.id === highlightedCourseId || isPrereq || isSuccessor || isAncestor) ? 1 : 0.3;
         }
         return 1;
       })
