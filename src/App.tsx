@@ -465,7 +465,7 @@ export default function App() {
               <Redo2 className="w-4 h-4" />
             </Button>
           </div>
-          <Button size="sm" className="h-8 bg-accent hover:bg-accent/90 text-white text-xs px-2 md:px-3">
+          <Button size="sm" className="h-8 bg-accent hover:bg-accent/90 text-white text-xs px-2 md:px-3" disabled>
             <span className="hidden sm:inline">Exportar Propuesta</span>
             <span className="sm:hidden">Exportar</span>
           </Button>
